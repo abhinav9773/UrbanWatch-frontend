@@ -6,54 +6,58 @@ import { Toaster } from "react-hot-toast";
 import "leaflet/dist/leaflet.css";
 import { AuthProvider } from "./context/AuthContext";
 
+// Restore theme before first paint (avoids flash)
+const savedTheme = localStorage.getItem("uw-theme");
+if (savedTheme === "light") {
+  document.documentElement.setAttribute("data-theme", "light");
+}
+
+function ThemedToaster() {
+  // Read CSS vars at render time — updates when theme toggles
+  const isDark = document.documentElement.getAttribute("data-theme") !== "light";
+
+  const base = {
+    background:  isDark ? "#18181b" : "#ffffff",
+    color:       isDark ? "#fafafa" : "#09090b",
+    border:      `1px solid ${isDark ? "#27272a" : "#e4e4e7"}`,
+    borderRadius: "8px",
+    fontFamily:  "'Geist', sans-serif",
+    fontSize:    "13px",
+    padding:     "12px 16px",
+    boxShadow:   isDark
+      ? "0 4px 20px rgba(0,0,0,0.5)"
+      : "0 4px 20px rgba(0,0,0,0.08)",
+  };
+
+  return (
+    <Toaster
+      position="bottom-right"
+      toastOptions={{
+        duration: 3500,
+        style: base,
+        success: {
+          style: { ...base, borderLeft: "3px solid #22c55e" },
+          iconTheme: { primary: "#22c55e", secondary: isDark ? "#18181b" : "#fff" },
+        },
+        error: {
+          style: { ...base, borderLeft: "3px solid #ef4444" },
+          iconTheme: { primary: "#ef4444", secondary: isDark ? "#18181b" : "#fff" },
+        },
+        loading: {
+          style: { ...base, borderLeft: "3px solid #3b82f6" },
+          iconTheme: { primary: "#3b82f6", secondary: isDark ? "#18181b" : "#fff" },
+        },
+      }}
+    />
+  );
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          duration: 3500,
-          style: {
-            background: "#0a1a12",
-            color: "#e0ffe8",
-            border: "1px solid rgba(0,255,136,0.2)",
-            borderRadius: "0px",
-            fontFamily: "'DM Mono', monospace",
-            fontSize: "12px",
-            letterSpacing: "0.05em",
-            padding: "12px 16px",
-            boxShadow: "0 0 24px rgba(0,255,136,0.1)",
-          },
-          success: {
-            style: {
-              borderLeft: "3px solid #00ff88",
-            },
-            iconTheme: {
-              primary: "#00ff88",
-              secondary: "#0a1a12",
-            },
-          },
-          error: {
-            style: {
-              borderLeft: "3px solid #ff4466",
-            },
-            iconTheme: {
-              primary: "#ff4466",
-              secondary: "#0a1a12",
-            },
-          },
-          loading: {
-            style: {
-              borderLeft: "3px solid #0099ff",
-            },
-            iconTheme: {
-              primary: "#0099ff",
-              secondary: "#0a1a12",
-            },
-          },
-        }}
-      />
+      <ThemedToaster />
       <App />
     </AuthProvider>
   </React.StrictMode>,
 );
+

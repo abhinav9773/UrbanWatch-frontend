@@ -3,17 +3,26 @@ import api from "./axios";
 
 export const usePushNotifications = (user) => {
   useEffect(() => {
-    if (!user || !("serviceWorker" in navigator) || !("PushManager" in window))
-      return;
+    if (!user) return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
     const register = async () => {
       try {
+        // Check current permission state first — don't attempt if already denied
+        if (Notification.permission === "denied") return;
+
         // Get VAPID public key
         const { data } = await api.get("/push/vapid-key");
         const vapidKey = data.publicKey;
 
         // Register service worker
         const reg = await navigator.serviceWorker.register("/sw.js");
+
+        // Request permission only if not yet granted
+        if (Notification.permission !== "granted") {
+          const permission = await Notification.requestPermission();
+          if (permission !== "granted") return; // User said no — silent exit
+        }
 
         // Check existing subscription
         let subscription = await reg.pushManager.getSubscription();
@@ -33,7 +42,10 @@ export const usePushNotifications = (user) => {
           { headers: { Authorization: `Bearer ${token}` } },
         );
       } catch (err) {
-        console.error("Push setup failed:", err);
+        // Only log unexpected errors, not permission denials
+        if (err?.name !== "NotAllowedError") {
+          console.error("Push setup failed:", err);
+        }
       }
     };
 

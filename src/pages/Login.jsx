@@ -4,19 +4,47 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState(null);
-  const [mounted, setMounted] = useState(false);
+function SunIcon() {
+  return (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="5"/>
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function MoonIcon() {
+  return (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
 
+export default function Login() {
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [theme, setTheme]       = useState("dark");
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Restore theme on mount
   useEffect(() => {
-    setMounted(true);
+    const saved = localStorage.getItem("uw-theme");
+    if (saved === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      setTheme("light");
+    }
   }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    if (next === "light") document.documentElement.setAttribute("data-theme", "light");
+    else document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("uw-theme", next);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,491 +53,211 @@ export default function Login() {
       const res = await api.post("/auth/login", { email, password });
       const { user, token } = res.data;
       login(user, token);
-      toast.success("Login successful ✅");
-      if (user.role === "ADMIN") navigate("/admin");
+      toast.success("Welcome back");
+      if (user.role === "ADMIN")         navigate("/admin");
       else if (user.role === "ENGINEER") navigate("/dashboard");
-      else navigate("/citizen");
+      else                               navigate("/citizen");
     } catch {
-      toast.error("Invalid credentials ❌");
+      toast.error("Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#050a0f",
+    <div style={{
+      minHeight: "100vh",
+      background: "var(--bg)",
+      display: "flex",
+      fontFamily: "'Geist', sans-serif",
+      color: "var(--text)",
+      transition: "background 0.22s",
+    }}>
+      {/* ── Left — decorative panel ── */}
+      <div className="login-left-panel" style={{
+        flex: 1,
+        background: "var(--bg-subtle)",
+        borderRight: "1px solid var(--border)",
         display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: 48,
+        position: "relative",
         overflow: "hidden",
-        fontFamily: "'DM Mono', monospace",
-      }}
-    >
-      {/* Animated city grid background */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+      }}>
+        {/* Grid */}
+        <div
+  style={{
+    position: "absolute",
+    inset: 0,
+    backgroundImage: "url('/Backdrop.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    opacity: 0.4,
+  }}
+/>  
+        {/* Glow */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.06) 0%, transparent 65%)",
+        }} />
 
-        @keyframes gridPulse {
-          0%, 100% { opacity: 0.03; }
-          50% { opacity: 0.08; }
-        }
-        @keyframes scanline {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100vh); }
-        }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(40px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes glowPulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
-          50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.35); }
-        }
-        @keyframes dotFloat {
-          0%, 100% { transform: translateY(0px); opacity: 0.4; }
-          50% { transform: translateY(-8px); opacity: 1; }
-        }
-        .uw-input {
-          width: 100%;
-          background: transparent;
-          border: none;
-          border-bottom: 1px solid rgba(0,255,136,0.2);
-          color: #e0ffe8;
-          padding: 12px 0;
-          font-family: 'DM Mono', monospace;
-          font-size: 14px;
-          outline: none;
-          transition: border-color 0.3s;
-          letter-spacing: 0.05em;
-        }
-        .uw-input:focus {
-          border-bottom-color: #00ff88;
-        }
-        .uw-input::placeholder {
-          color: rgba(0,255,136,0.25);
-          font-size: 12px;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-        }
-        .uw-btn {
-          position: relative;
-          width: 100%;
-          background: #00ff88;
-          color: #050a0f;
-          border: none;
-          padding: 14px;
-          font-family: 'Syne', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          cursor: pointer;
-          overflow: hidden;
-          transition: all 0.3s;
-          clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
-        }
-        .uw-btn:hover:not(:disabled) {
-          background: #00ffaa;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 30px rgba(0,255,136,0.4);
-        }
-        .uw-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .grid-line-h {
-          position: absolute;
-          left: 0; right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(0,255,136,0.15), transparent);
-          animation: gridPulse 4s ease-in-out infinite;
-        }
-        .grid-line-v {
-          position: absolute;
-          top: 0; bottom: 0;
-          width: 1px;
-          background: linear-gradient(180deg, transparent, rgba(0,255,136,0.15), transparent);
-          animation: gridPulse 4s ease-in-out infinite;
-        }
-        .scanline {
-          position: absolute;
-          left: 0; right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(0,255,136,0.08), transparent);
-          animation: scanline 8s linear infinite;
-          pointer-events: none;
-        }
-        .corner-bracket::before, .corner-bracket::after {
-          content: '';
-          position: absolute;
-          width: 16px;
-          height: 16px;
-          border-color: rgba(0,255,136,0.5);
-          border-style: solid;
-        }
-        .corner-tl::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-        .corner-tr::after { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
-        .corner-bl::before { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
-        .corner-br::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
-      `}</style>
+        {/* Logo top-left */}
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 42, height: 42, background: "var(--accent)", borderRadius: 11,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 14px rgba(59,130,246,0.4)",
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3L4 9V21H9V15H15V21H20V9L12 3Z" fill="white" fillOpacity="0.95"/>
+              <circle cx="12" cy="11" r="2.5" fill="rgba(0,0,0,0.25)"/>
+            </svg>
+          </div>
+          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--text)" }}>
+            UrbanWatch
+          </span>
+        </div>
 
-      {/* Left panel — branding */}
-      <div
-        style={{
-          flex: 1,
-          display: "none",
-          position: "relative",
-          overflow: "hidden",
-          borderRight: "1px solid rgba(0,255,136,0.06)",
-        }}
-        className="left-panel"
-      >
-        {/* Grid lines */}
-        {[15, 30, 45, 60, 75].map((pct) => (
-          <div
-            key={pct}
-            className="grid-line-h"
-            style={{ top: `${pct}%`, animationDelay: `${pct * 0.1}s` }}
-          />
-        ))}
-        {[20, 40, 60, 80].map((pct) => (
-          <div
-            key={pct}
-            className="grid-line-v"
-            style={{ left: `${pct}%`, animationDelay: `${pct * 0.05}s` }}
-          />
-        ))}
+        {/* Hero copy */}
+        <div style={{ position: "relative", maxWidth: 400 }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "4px 12px", borderRadius: 20,
+            background: "var(--accent-lo)", border: "1px solid rgba(59,130,246,0.25)",
+            fontSize: 11, fontWeight: 600, color: "var(--accent)",
+            letterSpacing: "0.05em", textTransform: "uppercase",
+            marginBottom: 20,
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", animation: "pulse 2s infinite" }} />
+            System Online
+          </div>
+          <h2 style={{
+            fontSize: 36, fontWeight: 800, color: "var(--text)",
+            margin: "0 0 16px", lineHeight: 1.15, letterSpacing: "-0.04em",
+          }}>
+            Civic infrastructure,<br />intelligently monitored.
+          </h2>
+          <p style={{ fontSize: 15, color: "var(--text-2)", lineHeight: 1.75, margin: 0 }}>
+            Real-time issue tracking, AI-powered priority assignment, and transparent resolution — built for modern cities.
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div style={{ position: "relative", display: "flex", gap: 36 }}>
+          {[
+            { label: "Issues tracked",   value: "12,400+" },
+            { label: "Avg. resolution",  value: "4.2 days" },
+            { label: "Active engineers", value: "340" },
+          ].map((s) => (
+            <div key={s.label}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.03em", lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 4 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Right panel — form */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "480px",
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "60px 48px",
-          position: "relative",
-          animation: mounted ? "slideUp 0.6s ease forwards" : "none",
-        }}
-      >
-        <div className="scanline" />
-
-        {/* Logo area */}
-        <div style={{ marginBottom: "56px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              marginBottom: "8px",
-            }}
-          >
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                border: "1px solid #00ff88",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  width: "10px",
-                  height: "10px",
-                  background: "#00ff88",
-                  animation: "glowPulse 2s ease infinite",
-                }}
-              />
-            </div>
-            <span
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: "20px",
-                fontWeight: 800,
-                color: "#e0ffe8",
-                letterSpacing: "0.05em",
-              }}
-            >
-              URBAN<span style={{ color: "#00ff88" }}>WATCH</span>
-            </span>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              paddingLeft: "44px",
-            }}
-          >
-            <div
-              style={{
-                width: "20px",
-                height: "1px",
-                background: "rgba(0,255,136,0.4)",
-              }}
-            />
-            <span
-              style={{
-                color: "rgba(0,255,136,0.4)",
-                fontSize: "10px",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-              }}
-            >
-              Civil Infrastructure Monitor
-            </span>
-          </div>
-        </div>
-
-        {/* Header */}
-        <div style={{ marginBottom: "48px" }}>
-          <div
-            style={{
-              color: "rgba(0,255,136,0.5)",
-              fontSize: "11px",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
-            // System Access
-          </div>
-          <h1
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: "42px",
-              fontWeight: 800,
-              color: "#e0ffe8",
-              lineHeight: 1.1,
-              margin: 0,
-            }}
-          >
-            Sign
-            <br />
-            <span style={{ color: "#00ff88" }}>In.</span>
-          </h1>
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "32px" }}
+      {/* ── Right — form ── */}
+      <div style={{
+        width: 460,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "64px 52px",
+        position: "relative",
+        animation: "fadeUp 0.3s ease",
+      }}>
+        {/* Theme toggle top-right */}
+        <button
+          onClick={toggleTheme}
+          className="uw-theme-toggle"
+          style={{ position: "absolute", top: 28, right: 28 }}
+          title={theme === "dark" ? "Switch to light" : "Switch to dark"}
         >
-          {/* Email field */}
-          <div style={{ position: "relative" }}>
-            <div
-              style={{
-                color: "rgba(0,255,136,0.4)",
-                fontSize: "10px",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                marginBottom: "8px",
-              }}
-            >
-              Email Address
-            </div>
+          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+        </button>
+
+        <div style={{ marginBottom: 40 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--text)" }}>
+            Sign in
+          </h1>
+          <div style={{ fontSize: 14, color: "var(--text-2)" }}>
+            Don't have an account?{" "}
+            <Link to="/register" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>
+              Create one
+            </Link>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div>
+            <label className="uw-label">Email address</label>
             <input
-              type="email"
-              placeholder="user@example.com"
-              className="uw-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocused("email")}
-              onBlur={() => setFocused(null)}
-              required
+              type="email" placeholder="you@example.com" className="uw-input"
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              required autoFocus
             />
-            {focused === "email" && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: "12px",
-                  width: "6px",
-                  height: "12px",
-                  background: "#00ff88",
-                  animation: "blink 1s step-end infinite",
-                }}
-              />
-            )}
           </div>
 
-          {/* Password field */}
-          <div style={{ position: "relative" }}>
-            <div
-              style={{
-                color: "rgba(0,255,136,0.4)",
-                fontSize: "10px",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                marginBottom: "8px",
-              }}
-            >
-              Password
-            </div>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="uw-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocused("password")}
-              onBlur={() => setFocused(null)}
-              required
-            />
-            {focused === "password" && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: "12px",
-                  width: "6px",
-                  height: "12px",
-                  background: "#00ff88",
-                  animation: "blink 1s step-end infinite",
-                }}
+          <div>
+            <label className="uw-label">Password</label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPass ? "text" : "password"} placeholder="••••••••" className="uw-input"
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                required style={{ paddingRight: 44 }}
               />
-            )}
+              <button type="button" onClick={() => setShowPass(!showPass)} style={{
+                position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                background: "none", border: "none", cursor: "pointer", color: "var(--text-3)",
+                display: "flex", alignItems: "center", padding: 0,
+              }}>
+                {showPass
+                  ? <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>
+                  : <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
           </div>
 
-          {/* Submit */}
-          <div style={{ marginTop: "8px" }}>
-            <button type="submit" disabled={loading} className="uw-btn">
-              {loading ? "Authenticating..." : "Access System"}
-            </button>
-          </div>
+          <button type="submit" disabled={loading} className="uw-btn-primary" style={{
+            width: "100%", height: 42, justifyContent: "center", fontSize: 14, marginTop: 4,
+            fontWeight: 600,
+          }}>
+            {loading
+              ? <><span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} /> Signing in…</>
+              : "Sign in to UrbanWatch"
+            }
+          </button>
         </form>
 
-        {/* Footer */}
-        <div
-          style={{
-            marginTop: "40px",
-            borderTop: "1px solid rgba(0,255,136,0.08)",
-            paddingTop: "24px",
-          }}
-        >
-          <span style={{ color: "rgba(0,255,136,0.35)", fontSize: "12px" }}>
-            New user?{" "}
-            <Link
-              to="/register"
-              style={{
-                color: "#00ff88",
-                textDecoration: "none",
-                borderBottom: "1px solid rgba(0,255,136,0.3)",
-              }}
-            >
-              Request access
-            </Link>
-          </span>
+        {/* Divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "28px 0" }}>
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          <span style={{ fontSize: 12, color: "var(--text-3)" }}>Secure access</span>
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
 
-        {/* Corner decorations */}
-        <div
-          style={{
-            position: "absolute",
-            top: "24px",
-            left: "24px",
-            width: "24px",
-            height: "24px",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "12px",
-              height: "1px",
-              background: "rgba(0,255,136,0.3)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "1px",
-              height: "12px",
-              background: "rgba(0,255,136,0.3)",
-            }}
-          />
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            bottom: "24px",
-            right: "24px",
-            width: "24px",
-            height: "24px",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              right: 0,
-              width: "12px",
-              height: "1px",
-              background: "rgba(0,255,136,0.3)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              right: 0,
-              width: "1px",
-              height: "12px",
-              background: "rgba(0,255,136,0.3)",
-            }}
-          />
-        </div>
-
-        {/* Status dot */}
-        <div
-          style={{
-            position: "absolute",
-            top: "32px",
-            right: "32px",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <div
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: "#00ff88",
-              animation: "glowPulse 2s ease infinite",
-            }}
-          />
-          <span
-            style={{
-              color: "rgba(0,255,136,0.4)",
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-            }}
-          >
-            SYS ONLINE
-          </span>
+        {/* Trust badges */}
+        <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+          {["TLS 1.3", "SOC-2 Ready", "Real-time sync"].map((t) => (
+            <div key={t} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text-3)" }}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5.5" stroke="var(--border-hi)"/>
+                <path d="M3.5 6l2 2 3-3" stroke="var(--green)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {t}
+            </div>
+          ))}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 860px) { .login-left-panel { display: none !important; } }
+      `}</style>
     </div>
   );
 }

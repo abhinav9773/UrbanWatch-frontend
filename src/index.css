@@ -1,8 +1,265 @@
 @import "tailwindcss";
-.glass {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl;
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+/* ─── DARK THEME (default) ─── */
+:root {
+  --bg:        #09090b;
+  --bg-subtle: #111113;
+  --bg-card:   #18181b;
+  --bg-hover:  #1f1f23;
+  --border:    #27272a;
+  --border-hi: #3f3f46;
+  --text:      #fafafa;
+  --text-2:    #a1a1aa;
+  --text-3:    #52525b;
+  --accent:    #3b82f6;
+  --accent-lo: rgba(59,130,246,0.12);
+  --accent-hi: #60a5fa;
+  --green:     #22c55e;
+  --green-lo:  rgba(34,197,94,0.1);
+  --amber:     #f59e0b;
+  --amber-lo:  rgba(245,158,11,0.1);
+  --red:       #ef4444;
+  --red-lo:    rgba(239,68,68,0.1);
+  --radius:    8px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+  --nav-bg:    rgba(9,9,11,0.92);
+  --modal-overlay: rgba(0,0,0,0.72);
 }
 
-.section-title {
-  @apply text-xl font-semibold tracking-wide;
+/* ─── LIGHT THEME ─── */
+:root[data-theme="light"] {
+  --bg:        #f8f8fa;
+  --bg-subtle: #f1f1f5;
+  --bg-card:   #ffffff;
+  --bg-hover:  #f4f4f8;
+  --border:    #e4e4e7;
+  --border-hi: #c4c4cc;
+  --text:      #09090b;
+  --text-2:    #52525b;
+  --text-3:    #a1a1aa;
+  --accent:    #2563eb;
+  --accent-lo: rgba(37,99,235,0.08);
+  --accent-hi: #1d4ed8;
+  --green:     #16a34a;
+  --green-lo:  rgba(22,163,74,0.08);
+  --amber:     #d97706;
+  --amber-lo:  rgba(217,119,6,0.08);
+  --red:       #dc2626;
+  --red-lo:    rgba(220,38,38,0.08);
+  --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --nav-bg:    rgba(248,248,250,0.94);
+  --modal-overlay: rgba(0,0,0,0.38);
 }
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  transition: background 0.22s, color 0.22s;
+}
+
+/* ─── Keyframes ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Card ─── */
+.uw-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, background 0.22s;
+}
+.uw-card:hover { border-color: var(--border-hi); }
+
+/* ─── Buttons ─── */
+.uw-btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  padding: 0 14px; height: 36px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
+}
+.uw-btn-primary:hover:not(:disabled) { opacity: 0.86; }
+.uw-btn-primary:active:not(:disabled) { transform: scale(0.98); }
+.uw-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.uw-btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-hover); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0 14px; height: 36px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s; white-space: nowrap;
+}
+.uw-btn-secondary:hover:not(:disabled) { background: var(--bg-card); border-color: var(--border-hi); }
+.uw-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.uw-btn-danger {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; color: var(--red);
+  border: 1px solid rgba(239,68,68,0.28); border-radius: var(--radius);
+  padding: 0 14px; height: 36px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s; white-space: nowrap;
+}
+.uw-btn-danger:hover { background: var(--red-lo); border-color: var(--red); }
+
+/* Logout — always red */
+.uw-btn-logout {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--red-lo); color: var(--red);
+  border: 1px solid rgba(239,68,68,0.28); border-radius: var(--radius);
+  padding: 0 14px; height: 36px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s; white-space: nowrap;
+}
+.uw-btn-logout:hover { background: rgba(239,68,68,0.18); border-color: var(--red); }
+
+.uw-btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; color: var(--text-2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0 14px; height: 36px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap;
+}
+.uw-btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
+
+/* Theme toggle */
+.uw-theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  background: var(--bg-card); color: var(--text-2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.uw-theme-toggle:hover { border-color: var(--border-hi); color: var(--text); background: var(--bg-hover); }
+
+/* ─── Inputs ─── */
+.uw-input, .uw-select, .uw-textarea {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.22s;
+  width: 100%;
+}
+.uw-input, .uw-select { height: 38px; padding: 0 12px; }
+.uw-textarea { padding: 10px 12px; resize: vertical; min-height: 96px; line-height: 1.6; }
+.uw-input:focus, .uw-select:focus, .uw-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-lo);
+}
+.uw-input::placeholder, .uw-textarea::placeholder { color: var(--text-3); }
+.uw-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2371717a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 36px; cursor: pointer;
+}
+.uw-select option { background: var(--bg-card); color: var(--text); }
+
+.uw-label {
+  font-size: 12px; font-weight: 500; color: var(--text-2);
+  margin-bottom: 6px; display: block; letter-spacing: 0.01em;
+}
+
+/* ─── Badge ─── */
+.uw-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap;
+}
+
+/* ─── Filter pill ─── */
+.filter-pill {
+  background: transparent; color: var(--text-2);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 12px;
+  font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--border-hi); color: var(--text); }
+.filter-pill.active {
+  background: var(--accent-lo); color: var(--accent);
+  border-color: rgba(59,130,246,0.35);
+}
+
+/* ─── Nav tab ─── */
+.nav-tab {
+  background: transparent; color: var(--text-3);
+  border: none; padding: 6px 12px; border-radius: 6px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.nav-tab:hover { color: var(--text-2); background: var(--bg-hover); }
+.nav-tab.active { color: var(--text); background: var(--bg-hover); }
+
+/* ─── Modal — z-index above Leaflet (z=1000) ─── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: var(--modal-overlay);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.15s ease;
+}
+.modal-box {
+  animation: modalIn 0.2s ease forwards;
+  max-height: 92vh; overflow-y: auto;
+  position: relative; z-index: 10000;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+
+/* ─── Mono ─── */
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* ─── Leaflet ─── */
+.leaflet-container { border-radius: var(--radius); }
+/* Keep Leaflet below modals */
+.leaflet-pane, .leaflet-control { z-index: 400 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 401 !important; }
+
+/* ─── Leaflet popup light-mode override ─── */
+:root[data-theme="light"] .leaflet-popup-content-wrapper {
+  background: #fff;
+  color: #09090b;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+:root[data-theme="light"] .leaflet-popup-tip { background: #fff; }
